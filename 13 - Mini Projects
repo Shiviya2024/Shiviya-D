@@ -1,0 +1,244 @@
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <windows.h>
+
+int width = 20, height = 20, gameover, score;
+int x, y, fruitX, fruitY, flag;
+int tailX[100], tailY[100];
+int countTail = 0;
+
+void setup() {
+    gameover = 0;
+    x = width / 2;
+    y = height / 2;
+    label1:
+    fruitX = rand() % width;
+    if (fruitX == 0) goto label1;
+    label2:
+    fruitY = rand() % height;
+    if (fruitY == 0) goto label2;
+    score = 0;
+}
+
+void draw() {
+    system("cls");
+    for (int i = 0; i < width + 2; i++) printf("#");
+    printf("\n");
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (j == 0) printf("#");
+            if (i == y && j == x) printf("O");
+            else if (i == fruitY && j == fruitX) printf("F");
+            else {
+                int isPrint = 0;
+                for (int k = 0; k < countTail; k++) {
+                    if (tailX[k] == j && tailY[k] == i) {
+                        printf("o");
+                        isPrint = 1;
+                    }
+                }
+                if (!isPrint) printf(" ");
+            }
+            if (j == width - 1) printf("#");
+        }
+        printf("\n");
+    }
+    for (int i = 0; i < width + 2; i++) printf("#");
+    printf("\n");
+    printf("Score: %d\n", score);
+}
+
+void input() {
+    if (_kbhit()) {
+        switch (_getch()) {
+            case 'a': flag = 1; break;
+            case 'd': flag = 2; break;
+            case 'w': flag = 3; break;
+            case 's': flag = 4; break;
+            case 'x': gameover = 1; break;
+        }
+    }
+}
+
+void logic() {
+    int prevX = tailX[0];
+    int prevY = tailY[0];
+    int prev2X, prev2Y;
+    tailX[0] = x;
+    tailY[0] = y;
+    for (int i = 1; i < countTail; i++) {
+        prev2X = tailX[i];
+        prev2Y = tailY[i];
+        tailX[i] = prevX;
+        tailY[i] = prevY;
+        prevX = prev2X;
+        prevY = prev2Y;
+    }
+    switch (flag) {
+        case 1: x--; break;
+        case 2: x++; break;
+        case 3: y--; break;
+        case 4: y++; break;
+        default: break;
+    }
+    if (x < 0 || x >= width || y < 0 || y >= height) gameover = 1;
+    for (int i = 0; i < countTail; i++) {
+        if (tailX[i] == x && tailY[i] == y) gameover = 1;
+    }
+    if (x == fruitX && y == fruitY) {
+        label3:
+        fruitX = rand() % width;
+        if (fruitX == 0) goto label3;
+        label4:
+        fruitY = rand() % height;
+        if (fruitY == 0) goto label4;
+        score += 10;
+        countTail++;
+    }
+}
+
+int main() {
+    setup();
+    while (!gameover) {
+        draw();
+        input();
+        logic();
+        Sleep(100);
+    }
+    printf("Game Over! Final Score: %d\n", score);
+    return 0;
+}
+#include <stdio.h>
+#define UNASSIGNED 0
+#define N 9
+
+int isSafe(int grid[N][N], int row, int col, int num) {
+    for (int x = 0; x < N; x++)
+        if (grid[row][x] == num || grid[x][col] == num)
+            return 0;
+    int startRow = row - row % 3, startCol = col - col % 3;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (grid[i + startRow][j + startCol] == num)
+                return 0;
+    return 1;
+}
+
+int solveSudoku(int grid[N][N]) {
+    int row, col, isEmpty = 1;
+    for (row = 0; row < N; row++) {
+        for (col = 0; col < N; col++) {
+            if (grid[row][col] == UNASSIGNED) {
+                isEmpty = 0;
+                break;
+            }
+        }
+        if (!isEmpty)
+            break;
+    }
+    if (isEmpty)
+        return 1;
+    for (int num = 1; num <= N; num++) {
+        if (isSafe(grid, row, col, num)) {
+            grid[row][col] = num;
+            if (solveSudoku(grid))
+                return 1;
+            grid[row][col] = UNASSIGNED;
+        }
+    }
+    return 0;
+}
+
+void printGrid(int grid[N][N]) {
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++)
+            printf("%2d", grid[row][col]);
+        printf("\n");
+    }
+}
+
+int main() {
+    int grid[N][N] = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+    if (solveSudoku(grid))
+        printGrid(grid);
+    else
+        printf("No solution exists");
+    return 0;
+}
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    char destination[30];
+    int days;
+    float budget;
+} TravelPlan;
+
+void inputPlan(TravelPlan* plan) {
+    printf("Enter destination: ");
+    scanf("%s", plan->destination);
+    printf("Enter number of days: ");
+    scanf("%d", &plan->days);
+    printf("Enter budget: ");
+    scanf("%f", &plan->budget);
+}
+
+void displayPlan(TravelPlan plan) {
+    printf("Destination: %s\n", plan.destination);
+    printf("Days: %d\n", plan.days);
+    printf("Budget: %.2f\n", plan.budget);
+}
+
+int main() {
+    TravelPlan plan;
+    inputPlan(&plan);
+    printf("\nTravel Plan:\n");
+    displayPlan(plan);
+    return 0;
+}
+#include <stdio.h>
+
+void cashFlowMinimiser(float cashFlow[], int n) {
+    float totalCashFlow = 0;
+    for (int i = 0; i < n; i++) totalCashFlow += cashFlow[i];
+    float avg = totalCashFlow / n;
+    for (int i = 0; i < n; i++) cashFlow[i] -= avg;
+
+    while (1) {
+        int maxCredit = 0, maxDebit = 0;
+        for (int i = 1; i < n; i++) {
+            if (cashFlow[i] > cashFlow[maxCredit]) maxCredit = i;
+            if (cashFlow[i] < cashFlow[maxDebit]) maxDebit = i;
+        }
+
+        if (cashFlow[maxCredit] == 0 && cashFlow[maxDebit] == 0) break;
+
+        float min = (cashFlow[maxCredit] < -cashFlow[maxDebit]) ? cashFlow[maxCredit] : -cashFlow[maxDebit];
+        cashFlow[maxCredit] -= min;
+        cashFlow[maxDebit] += min;
+
+        printf("Person %d pays %.2f to Person %d\n", maxDebit, min, maxCredit);
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter number of people: ");
+    scanf("%d", &n);
+    float cashFlow[n];
+    printf("Enter net cash flows: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%f", &cashFlow[i]);
+    }
+    cashFlowMinimiser(cashFlow, n)
