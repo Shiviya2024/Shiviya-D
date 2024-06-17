@@ -1,9 +1,4 @@
-
-
 #include <stdio.h>
-
-
-
 int main() {
 
     // Variable to store the age of the candidate
